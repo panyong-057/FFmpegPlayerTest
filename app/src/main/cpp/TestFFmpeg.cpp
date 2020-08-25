@@ -9,17 +9,17 @@ extern "C" {
 #include <libavutil/time.h>
 }
 
-#include "DNFFmpeg.h"
+#include "TestFFmpeg.h"
 #include "macro.h"
 
 
 void *task_prepare(void *args) {
-    DNFFmpeg *ffmpeg = static_cast<DNFFmpeg *>(args);
+    TestFFmpeg *ffmpeg = static_cast<TestFFmpeg *>(args);
     ffmpeg->_prepare();
     return 0;
 }
 
-DNFFmpeg::DNFFmpeg(JavaCallHelper *callHelper, const char *dataSource) {
+TestFFmpeg::TestFFmpeg(JavaCallHelper *callHelper, const char *dataSource) {
     this->callHelper = callHelper;
     //防止 dataSource参数 指向的内存被释放
     //strlen 获得字符串的长度 不包括\0
@@ -27,18 +27,18 @@ DNFFmpeg::DNFFmpeg(JavaCallHelper *callHelper, const char *dataSource) {
     strcpy(this->dataSource, dataSource);
 }
 
-DNFFmpeg::~DNFFmpeg() {
+TestFFmpeg::~TestFFmpeg() {
     //释放
     DELETE(dataSource);
 }
 
 
-void DNFFmpeg::prepare() {
+void TestFFmpeg::prepare() {
     //创建一个线程
     pthread_create(&pid, 0, task_prepare, this);
 }
 
-void DNFFmpeg::_prepare() {
+void TestFFmpeg::_prepare() {
     // 初始化网络 让ffmpeg能够使用网络
     avformat_network_init();
     //1、打开媒体地址(文件地址、直播地址)
@@ -146,13 +146,13 @@ void DNFFmpeg::_prepare() {
 };
 
 void *play(void *args) {
-    DNFFmpeg *ffmpeg = static_cast<DNFFmpeg *>(args);
+    TestFFmpeg *ffmpeg = static_cast<TestFFmpeg *>(args);
     ffmpeg->_start();
     return 0;
 }
 
 
-void DNFFmpeg::start() {
+void TestFFmpeg::start() {
     // 正在播放
     isPlaying = 1;
 
@@ -170,7 +170,7 @@ void DNFFmpeg::start() {
 /**
  * 专门读取数据包
  */
-void DNFFmpeg::_start() {
+void TestFFmpeg::_start() {
     //1、读取媒体数据包(音视频数据包)
     int ret;
     while (isPlaying) {
@@ -214,12 +214,12 @@ void DNFFmpeg::_start() {
     videoChannel->stop();
 };
 
-void DNFFmpeg::setRenderFrameCallback(RenderFrameCallback callback) {
+void TestFFmpeg::setRenderFrameCallback(RenderFrameCallback callback) {
     this->callback = callback;
 }
 
 void *aync_stop(void *args) {
-    DNFFmpeg *ffmpeg = static_cast<DNFFmpeg *>(args);
+    TestFFmpeg *ffmpeg = static_cast<TestFFmpeg *>(args);
     //   等待prepare结束
     pthread_join(ffmpeg->pid, 0);
     // 保证 start线程结束
@@ -237,7 +237,7 @@ void *aync_stop(void *args) {
     return 0;
 }
 
-void DNFFmpeg::stop() {
+void TestFFmpeg::stop() {
     isPlaying = 0;
     callHelper = 0;
     // formatContext

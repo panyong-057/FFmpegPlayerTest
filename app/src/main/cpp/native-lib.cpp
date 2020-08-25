@@ -1,10 +1,10 @@
 #include <jni.h>
 #include <string>
 #include <android/native_window_jni.h>
-#include "DNFFmpeg.h"
+#include "TestFFmpeg.h"
 #include "macro.h"
 
-DNFFmpeg *ffmpeg = 0;
+TestFFmpeg *ffmpeg = 0;
 JavaVM *javaVm = 0;
 ANativeWindow *window = 0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -54,7 +54,7 @@ Java_com_test_player_TestPlayer_native_1prepare__Ljava_lang_String_2(JNIEnv *env
     const char *dataSource = env->GetStringUTFChars(dataSource_, 0);
     //创建播放器
     helper = new JavaCallHelper(javaVm, env, instance);
-    ffmpeg = new DNFFmpeg(helper, dataSource);
+    ffmpeg = new TestFFmpeg(helper, dataSource);
     ffmpeg->setRenderFrameCallback(render);
     ffmpeg->prepare();
     env->ReleaseStringUTFChars(dataSource_, dataSource);

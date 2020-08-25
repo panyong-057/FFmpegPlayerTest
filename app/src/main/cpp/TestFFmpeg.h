@@ -14,10 +14,10 @@ extern  "C" {
 }
 
 
-class DNFFmpeg {
+class TestFFmpeg {
 public:
-    DNFFmpeg(JavaCallHelper* callHelper,const char* dataSource);
-    ~DNFFmpeg();
+    TestFFmpeg(JavaCallHelper* callHelper, const char* dataSource);
+    ~TestFFmpeg();
 
     void prepare();
     void _prepare();
