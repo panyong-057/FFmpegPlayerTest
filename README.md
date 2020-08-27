@@ -5,3 +5,6 @@
 - ## 4、封装自己的so库及sdk (build/intermediates/cmake/debug/obj/armeabi-v7a/libnative-lib.so)
 - ## 5、testso so库用例  (集成使用)
 - ## 6、视频素材 mp3/big_buck_bunny.mp4# ffmpeg-player
+
+
+- ## OpenSLES 用例   https://github.com/android/ndk-samples/tree/master/native-audio

@@ -8,7 +8,7 @@ extern "C" {
 }
 
 #include "VideoChannel.h"
-#include "macro.h"
+
 
 void *decode_task(void *args) {
     VideoChannel *channel = static_cast<VideoChannel *>(args);
@@ -27,18 +27,18 @@ void *render_task(void *args) {
  * @param q
  */
 
-void dropAvPacket(queue<AVPacket *> &q) {
-    while (!q.empty()) {
-        AVPacket *packet = q.front();
-        //如果不属于 I 帧
-        if (packet->flags != AV_PKT_FLAG_KEY) {
-            BaseChannel::releaseAvPacket(&packet);
-            q.pop();
-        } else {
-            break;
-        }
-    }
-}
+//void dropAvPacket(queue<AVPacket *> &q) {
+//    while (!q.empty()) {
+//        AVPacket *packet = q.front();
+//        //如果不属于 I 帧
+//        if (packet->flags != AV_PKT_FLAG_KEY) {
+//            BaseChannel::releaseAvPacket(&packet);
+//            q.pop();
+//        } else {
+//            break;
+//        }
+//    }
+//}
 
 /**
  * 丢已经解码的图片
@@ -97,7 +97,11 @@ void VideoChannel::decode() {
         ret = avcodec_send_packet(avCodecContext, packet);
         releaseAvPacket(&packet);
         //重试
-        if (ret != 0) {
+        if (ret == AVERROR(EAGAIN)) {
+            //需要更多数据
+            continue;
+        } else if (ret < 0) {
+            //失败
             break;
         }
         //代表了一个图像 (将这个图像先输出来)
@@ -109,6 +113,11 @@ void VideoChannel::decode() {
             continue;
         } else if (ret != 0) {
             break;
+        }
+
+        while (frames.size() > 100 && isPlaying) {
+            av_usleep(1000 * 10);
+            continue;
         }
         //再开一个线程 来播放 (流畅度)
         frames.push(frame);
@@ -166,11 +175,11 @@ void VideoChannel::render() {
                 double diff = clock - audioClock;
                 if (diff > 0) {
                     //大于0 表示视频比较快
-                    LOGE("视频快了：%lf", diff);
+                    //LOGE("视频快了：%lf", diff);
                     av_usleep((delays + diff) * 1000000);
                 } else if (diff < 0) {
                     //小于0 表示音频比较快
-                    LOGE("音频快了：%lf", diff);
+                   // LOGE("音频快了：%lf", diff);
                     // 视频包积压的太多了 （丢包）
                     if (fabs(diff) >= 0.05) {
                         releaseAvFrame(&frame);

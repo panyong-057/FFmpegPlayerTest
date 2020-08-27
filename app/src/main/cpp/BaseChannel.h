@@ -7,7 +7,7 @@
 
 
 #include "safe_queue.h"
-
+#include "macro.h"
 extern "C" {
 #include <libavcodec/avcodec.h>
 };
@@ -43,6 +43,7 @@ public:
             av_packet_free(packet);
             //为什么用指针的指针？
             // 指针的指针能够修改传递进来的指针的指向
+            LOGE("releaseAvPacket");
             *packet = 0;
         }
     }
@@ -52,6 +53,7 @@ public:
             av_frame_free(frame);
             //为什么用指针的指针？
             // 指针的指针能够修改传递进来的指针的指向
+            //LOGE("releaseAvFrame");
             *frame = 0;
         }
     }
